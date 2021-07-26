@@ -72,7 +72,14 @@ typeCmd CommandProcessor(InputComand *CMD)
             throwCmd(CMD);
             exit(EXIT_SUCCESS);
         }
-        return metaCmd;
+        else
+        {
+            SetColorRed(false);
+            printf("Unknown MetaCommand : '%s'", CMD->cmd);
+            resetColor();
+            return unknown;
+        }
+        //return metaCmd;
     }
     else
     {
@@ -92,8 +99,8 @@ typeCmd CommandProcessor(InputComand *CMD)
         else if (strncmp(CMD->cmd, "create", 6) == 0)
         {
             CMD->type = createCmd;
-            listCols *COLS;
-            size_t COLs_NUMBER = create_Function(CMD, COLS);
+            listCols *COLS = NULL;
+            size_t COLs_NUMBER = create_Function(CMD, COLS); //create ( id int , name varchar(45) )
             return createCmd;
         }
         else
@@ -109,6 +116,7 @@ typeCmd CommandProcessor(InputComand *CMD)
 size_t create_Function(InputComand *CMD, listCols *tabCOLs)
 {
     char *copie = (char *)malloc(sizeof(char) * (strlen(CMD) + 1));
+    tabCOLs = (listCols *)malloc(sizeof(listCols));
     strcpy(copie, CMD->cmd);
     char *token = strtok(copie, "()");
 
@@ -124,45 +132,63 @@ size_t create_Function(InputComand *CMD, listCols *tabCOLs)
 
     //tokenize
     DATA_NATURE type;
-    void * data;
+    void *data;
     char *subtokens = strtok(token, ", ");
     printf("SubToken 1 : .%s. \n", subtokens);
     char *typeData = strtok(NULL, ", ");
     printf("SubToken 2 : .%s. \n", typeData);
-    
+    data = transfertToType(typeData, &type); 
+    printf("Transferd 1 , size : %d\n", sizeof(data));
+    addcolumn(*tabCOLs, subtokens, data, type);
+
+    subtokens = strtok(NULL, ", ");
+    printf("SubToken 3 : .%s. \n", subtokens);
+    typeData = strtok(NULL, ", ");
+    printf("SubToken 4 : .%s. \n", typeData);
     data = transfertToType(typeData, &type);
-    addcolumn(tabCOLs, subtokens, data , type);
-    printList(tabCOLs);
+    printf("Transferd 2");
+    addcolumn(*tabCOLs, subtokens, data, type);
+
+    printList(*tabCOLs);
     free(copie);
-    freeCOLS(tabCOLs);
+    freeCOLS(*tabCOLs);
     return true;
 }
 
-void addcolumn(listCols *List, char *titre, void *dataType,DATA_NATURE VarType)
+void addcolumn(listCols *List, char *titre, void *dataType, DATA_NATURE VarType)
 {
     listCols col = (column *)malloc(sizeof(column));
     col->title = (char *)malloc(sizeof(char) * (strlen(titre) + 1));
     strcpy(col->title, titre);
+    printf("Title copied \n");
     col->dataCase = dataType;
+    printf("Data transformed \n");
     col->type = VarType;
+    printf("type transformed \n");
     col->next = NULL;
-    if (*List == NULL)
+
+    if (*List == NULL){
         *List = col;
+        printf("First col \n");
+    }
     else
     {
         listCols temp = *List;
         while (temp->next != NULL)
         {
             temp = temp->next;
+            printf( "adding cols! \n");
         }
         temp->next = col;
+        printf( "Attaching column at the end.. \n");
     }
-    printf("add columns is done : ---------\n");
+    printf("adding column is done : ---------\n");
+    printf("data added \n");
 
     return;
 }
 
-void *transfertToType(char *string, DATA_NATURE * type)
+void *transfertToType(char *string, DATA_NATURE *type)
 {
 
     if (strncmp(string, "varchar", 7) == 0)
@@ -188,14 +214,14 @@ void *transfertToType(char *string, DATA_NATURE * type)
         printf("data is done\n");
         return charType;
     }
-    else if (strncmp(string, "int", 7) == 0)
+    else if (strncmp(string, "int", 3) == 0)
     {
         type = INTEGER;
         printf("data is int\n");
         int *integerType = (int *)malloc(sizeof(int));
         return integerType;
     }
-    //add the others later
+    //add the others later for test
 }
 
 void freeCOLS(listCols list)
@@ -210,8 +236,46 @@ void freeCOLS(listCols list)
     }
 }
 
-void printList(listCols gg)
+void printList(listCols L)
 {
+    listCols temp = L;
+    printf("[");
+    while (temp->next != NULL)
+    {
+        printf(",%d : ", temp->title);
+        switch (temp->type)
+        {
+        case INTEGER:
+            printf("%d ", temp->dataCase);
+            break;
+        case TEXT:
+            printf("%s ", temp->dataCase);
+            break;
+        case REAL:
+            printf("%f ", temp->dataCase);
+            break;
+        default:
+            printf("Corupted Format !\n");
+            break;
+        }
+        temp = temp->next;
+    }
+    printf("%d]", temp->title);
+    switch (temp->type)
+        {
+        case INTEGER:
+            printf("%d ", temp->dataCase);
+            break;
+        case TEXT:
+            printf("%s ", temp->dataCase);
+            break;
+        case REAL:
+            printf("%f ", temp->dataCase);
+            break;
+        default:
+            printf("Corupted Format !\n");
+            break;
+        }
 }
 
 InputComand *NewCmd()
