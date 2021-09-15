@@ -4,13 +4,14 @@
 #include "tabs.h"
 #include "display.h"
 #include "tokenizer.h"
+#include "rows.h"
+
+#define Help_print() printf("\nEnter .tables to see all tables ( none : there's no table yet )\n\n")
 
 
-
-#define InitStrSize 10
 #define printError() printf("\nError Code : %d !!\n", errno)
 
-char *DB_NAME = "db"; //exemple
+
 
 tab_header *current_table;
 
@@ -57,7 +58,7 @@ int main(int argc, char *argv[])
         //Processeur des commandes
         if (CommandProcessor(CMD) == unknown)
         {
-            throwCmd(CMD);
+            //throwCmd(CMD);
             continue;
         }
         throwCmd(CMD);
@@ -81,7 +82,7 @@ typeCmd CommandProcessor(InputComand *CMD)
         }
         else if (strcmp(CMD->cmd, ".help") == 0)
         {
-            printf("HELP\n");
+            Help_print();
         }
         else if (strcmp(CMD->cmd, ".tables") == 0)
         {
@@ -104,13 +105,13 @@ typeCmd CommandProcessor(InputComand *CMD)
         if (strncmp(CMD->cmd, "insert", 6) == 0)
         {
             //insert cmd tokenizing
-            size_t count = insert_tokenizer(CMD);
-            printf("cmd : main : '%s' \n", CMD->cmd);
+            size_t count = insert_row_into(tab_all);
             CMD->type = insertCmd;
             return insertCmd;
         }
         else if (strncmp(CMD->cmd, "select", 6) == 0)
-        {
+        {   
+            showTable(tab_all[0]);
             CMD->type = selectCmd;
             return selectCmd;
         }
@@ -120,8 +121,8 @@ typeCmd CommandProcessor(InputComand *CMD)
             listCols COLS = NULL;
             char ptr_to_name[44];
             size_t cols_count = 0;
-            create_result result_creation = create_Tokenizer(CMD, &COLS, &cols_count, ptr_to_name);
-            printf(" naaaaaaaaaaaem out; %s\n",ptr_to_name);
+            tab_header headerOfTable;
+            create_result result_creation = create_Tokenizer(CMD, &COLS, &cols_count, ptr_to_name , &headerOfTable);
             switch (result_creation)
             {
             case ERROR_AT_CREATION:
@@ -146,7 +147,8 @@ typeCmd CommandProcessor(InputComand *CMD)
                 {
                     printf("Done processing!\nColumns count is %d\n", cols_count);
                     addTableTo(COLS, ptr_to_name, cols_count);
-                    printf("out againe \n");
+                    printf("out from table adding \n");
+                    printTable_header(COLS);
                     return createCmd;
                 }
                 else
@@ -215,23 +217,5 @@ typeCmd CommandProcessor(InputComand *CMD)
     }
 }
 
-InputComand *NewCmd()
-{
-    InputComand *CMD = (InputComand *)malloc(sizeof(InputComand));
-    CMD->cmd = (char *)malloc(InitStrSize * sizeof(char));
-    CMD->isMetaCmd = true;
-    CMD->SizeOfCmd = 0;
-    CMD->type = unknown;
-    return CMD;
-}
 
-void throwCmd(InputComand *CMD)
-{
-    free(CMD->cmd);
-    free(CMD);
-}
 
-void printDB()
-{
-    printf("%s>", DB_NAME);
-}

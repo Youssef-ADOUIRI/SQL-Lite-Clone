@@ -7,7 +7,13 @@
 #include <stdbool.h>
 #include <string.h>
 
+
+
 #define MAX_HEADER_NAME 44
+//char DB_NAME[45] = "db";
+
+//if using wingw32
+typedef unsigned int u_int;
 
 enum typeCmd
 {
@@ -39,11 +45,24 @@ struct column
 {
     char *title;
     void *dataCase;
+    size_t memorySize; 
     DATA_NATURE type;
     struct Coloms *next;
 };
 typedef struct column column;
 typedef column *listCols;
+
+struct row
+{
+    listCols head;
+    u_int cols_count;
+    size_t memorySize;
+    struct row* next;
+};
+typedef struct row row;
+typedef row * list_rows;
+
+
 
 struct InputComand
 {
@@ -64,11 +83,14 @@ typedef struct
 } tab_header;
 
 
+typedef struct {
+    tab_header header;
+    size_t row_count;
+    list_rows rows;
+}table;
+
 
 //les prototypes
-void printDB();
-InputComand *NewCmd();
-void throwCmd(InputComand *);
 typeCmd CommandProcessor(InputComand *);
 
 

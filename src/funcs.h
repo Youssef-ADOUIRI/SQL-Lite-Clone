@@ -4,6 +4,7 @@
 
 #include "structures.h"
 
+void inputData(DATA_NATURE ,void*  );
 char *strtok_rh(char *str, const char *delim, char **nextp); // found in https://stackoverflow.com/questions/12975022/strtok-r-for-mingw
 
 

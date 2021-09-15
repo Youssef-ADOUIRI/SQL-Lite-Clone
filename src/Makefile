@@ -28,7 +28,7 @@ prog: main.o funcs.o tokenizer.o tabs.o Memory.o rows.o display.o
 
 
 clean:
-	rm -f core *.o prog
+	del -f core *.o prog
 
 
 

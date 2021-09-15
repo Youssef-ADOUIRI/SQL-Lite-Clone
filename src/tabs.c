@@ -1,7 +1,8 @@
 #include "tabs.h"
 #include "funcs.h"
+#include "memory.h"
 
-tab_header tab_Headers[40];
+
 
 static u_int tab_count_db = 0;
 
@@ -12,8 +13,9 @@ void addcolumn(listCols *List, char *titre, void *data, DATA_NATURE VarType, tab
     strcpy(col->title, titre);
     col->dataCase = data;
     col->type = VarType;
+    
     col->next = NULL;
-
+   
     if (*List == NULL)
     {
         *List = col;
@@ -27,9 +29,7 @@ void addcolumn(listCols *List, char *titre, void *data, DATA_NATURE VarType, tab
         }
         temp->next = col;
     }
-
     (headerTab->cols_count)++;
-
     return;
 }
 
@@ -55,26 +55,19 @@ void addTableTo(listCols List, char name[], u_int colsCount)
 void addHeadersTab(tab_header TabHeader)
 {
 
-    tab_Headers[tab_count_db] = TabHeader;
+    tab_all[tab_count_db].header = TabHeader;
+    tab_all[tab_count_db].rows = NULL;
     tab_count_db++;
 }
 
 void destroy_all_tabHeaders()
 {
-    destroyTabHeader(tab_Headers[0]);
+    destroyTabHeader(tab_all[0].header);
 }
 
 void destroyTabHeader(tab_header TabHeader)
 {
-    listCols temp = NULL;
-    while (TabHeader.column_list_attributes != NULL)
-    {
-        temp = TabHeader.column_list_attributes;
-        TabHeader.column_list_attributes = (TabHeader.column_list_attributes)->next;
-        free(temp->dataCase);
-        free(temp->title);
-        free(temp);
-    }
+    destroy_list_COLS(TabHeader.column_list_attributes);    
 }
 
 // Virtual Machine
@@ -149,7 +142,7 @@ void *transfertToType(char *string, DATA_NATURE *type)
     }
 }
 
-void printList(listCols L)
+void printTable_header(listCols L)
 {
 
     listCols temp = L;
@@ -184,9 +177,9 @@ void printList(listCols L)
             printf("Corupted Format !\n");
             break;
         }
-        printf(" cout!f \n");
+
     }
-    printf(" cannot ! \n");
+
 
     while (temp->next != NULL)
     {
@@ -215,6 +208,11 @@ void printList(listCols L)
     printf("]\n");
 }
 
+void printTable(table * t)
+{
+    //showTable();
+}
+
 void showALLTabs()
 {
     if (tab_count_db <= 0)
@@ -225,19 +223,19 @@ void showALLTabs()
     {
         for (int i = 0; i < tab_count_db; i++)
         {
-            printf("%s ",tab_Headers[i].name);
+            printf("%s ",tab_all[i].header.name);
         }
     }
     printf("\n");
 }
 
-bool find_table(const char *name, tab_header *ptr_to_found)
+bool find_table(const char *name, table *ptr_to_found)
 {
     for (int i = 0; i < tab_count_db; i++)
     {
-        if (strcmp(tab_Headers[i].name, name) == 0)
+        if (strcmp(tab_all[i].header.name, name) == 0)
         {
-            ptr_to_found = &tab_Headers[i];
+            ptr_to_found = &tab_all[i];
             return true;
         }
     }
