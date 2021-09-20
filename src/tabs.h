@@ -5,7 +5,7 @@
 
 #define STANDARD_ALLOCATION_SIZE 45
 
-table tab_all[40];
+table *tab_all[40];
 
 
 void addcolumn(listCols *List, char *titre, void *dataType, DATA_NATURE VarType , tab_header*);

@@ -63,3 +63,18 @@ void destroy_column(column *c)
     free(c->title);
     free(c->dataCase);
 }
+
+void fKey(){
+    int c = 0;
+    while (c != '\n' && c != EOF)
+    {
+        c = getchar();
+    }
+}
+
+void destroy_Table(table * t){
+
+    destroy_list_COLS(t->header.column_list_attributes);
+    destroy_list_ROWS(t->rows);
+
+}

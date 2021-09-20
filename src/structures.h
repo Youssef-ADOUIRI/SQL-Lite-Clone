@@ -22,6 +22,7 @@ enum typeCmd
     createCmd,
     useCmd,
     metaCmd,
+    exitCmd,
     unknown
 }; //les types de commande d'entré
 typedef enum typeCmd typeCmd;

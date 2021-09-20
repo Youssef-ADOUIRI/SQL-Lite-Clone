@@ -54,15 +54,15 @@ void addTableTo(listCols List, char name[], u_int colsCount)
 
 void addHeadersTab(tab_header TabHeader)
 {
-
-    tab_all[tab_count_db].header = TabHeader;
-    tab_all[tab_count_db].rows = NULL;
+    tab_all[tab_count_db] = (table*)malloc(sizeof(table));
+    (tab_all[tab_count_db])->header = TabHeader;
+    tab_all[tab_count_db]->rows = NULL;
     tab_count_db++;
 }
 
 void destroy_all_tabHeaders()
 {
-    destroyTabHeader(tab_all[0].header);
+    destroyTabHeader(tab_all[0]->header);
 }
 
 void destroyTabHeader(tab_header TabHeader)
@@ -223,7 +223,7 @@ void showALLTabs()
     {
         for (int i = 0; i < tab_count_db; i++)
         {
-            printf("%s ",tab_all[i].header.name);
+            printf("%s ",tab_all[i]->header.name);
         }
     }
     printf("\n");
@@ -233,9 +233,11 @@ bool find_table(const char *name, table *ptr_to_found)
 {
     for (int i = 0; i < tab_count_db; i++)
     {
-        if (strcmp(tab_all[i].header.name, name) == 0)
+        if (strcmp(tab_all[i]->header.name, name) == 0)
         {
-            ptr_to_found = &tab_all[i];
+            ptr_to_found = tab_all[i];
+            
+            printf("n : %s\n" , ptr_to_found->header.name);
             return true;
         }
     }

@@ -1,6 +1,7 @@
 
 #include "tokenizer.h"
 #include <string.h>
+#include "tabs.h"
 
 #define dilim1 " ()"
 
@@ -180,65 +181,62 @@ create_result create_Tokenizer(InputComand *CMD, listCols *tabCOLs, size_t *nbrC
 
 size_t insert_tokenizer(InputComand *CMD)
 {
-    // size_t cmd_count = 0;
-    // //start tokenizing
+    size_t cmd_count = 0;
+    //start tokenizing
 
-    // char *copie = (char *)malloc(sizeof(char) * (CMD->LenOfCmd + 1));
-    // strcpy(copie, CMD->cmd);
+    char *copie = (char *)malloc(sizeof(char) * (CMD->LenOfCmd + 1));
+    strcpy(copie, CMD->cmd);
 
-    // char *token = strtok(copie, " ()");
+    char *token = strtok(copie, " ()");
 
-    // if (token == NULL || strcmp(token, "insert") != 0)
-    // {
-    //     SetColorRed(false);
-    //     printf("Error : An '(' expected after 'insert' ");
-    //     resetColor();
-    //     free(copie);
-    //     copie = NULL;
-    //     return 0;
-    // }
+    if (token == NULL || strcmp(token, "insert") != 0)
+    {
+        SetColorRed(false);
+        printf("Error : An '(' expected after 'insert' ");
+        resetColor();
+        free(copie);
+        copie = NULL;
+        return 0;
+    }
 
-    // token = strtok(NULL, "()"); //ce qui est entre parenthéses
+    token = strtok(NULL, "()"); //ce qui est entre parenthéses
 
-    // if (token == NULL)
-    // {
-    //     SetColorRed(false);
-    //     printf("Error : Empty input between brackets ");
-    //     resetColor();
-    //     free(copie);
-    //     copie = NULL;
-    //     return 0;
-    // }
+    if (token == NULL)
+    {
+        SetColorRed(false);
+        printf("Error : Empty input between brackets ");
+        resetColor();
+        free(copie);
+        copie = NULL;
+        return 0;
+    }
 
-    // char *subtokens = strtok(token, ", "); //start tokinizing the token
+    char *subtokens = strtok(token, ", "); //start tokinizing the token
 
-    // if (subtokens == NULL)
-    // {
-    //     SetColorRed(false);
-    //     printf("Error : Input fromat error ");
-    //     resetColor();
-    //     free(copie);
-    //     copie = NULL;
-    //     return 0;
-    // }
-    // printf("subtoken 1 : %s;\n", subtokens);
-    // cmd_count++;
-    // subtokens = strtok(NULL, ", ");
-    // while (subtokens != NULL)
-    // {
-    //     printf("v :%s\n", subtokens);
-    //     cmd_count++;
-    //     subtokens = strtok(NULL, ", ");
-    // }
+    if (subtokens == NULL)
+    {
+        SetColorRed(false);
+        printf("Error : Input fromat error ");
+        resetColor();
+        free(copie);
+        copie = NULL;
+        return 0;
+    }
+    printf("subtoken 1 : %s;\n", subtokens);
+    cmd_count++;
+    subtokens = strtok(NULL, ", ");
+    while (subtokens != NULL)
+    {
+        printf("v :%s\n", subtokens);
+        cmd_count++;
+        subtokens = strtok(NULL, ", ");
+    }
 
-    // free(copie);
-    // copie = NULL;
-
-
-
+    free(copie);
+    copie = NULL;
 }
 
-use_result use_tok_function(InputComand *CMD, tab_header *returned_tab)
+use_result use_tok_function(InputComand *CMD, table *returned_tab)
 {
 
     if (CMD->cmd == NULL || strlen(CMD->cmd) < 1)
@@ -287,8 +285,9 @@ use_result use_tok_function(InputComand *CMD, tab_header *returned_tab)
             if (token != NULL)
             {
                 //return a pointer to the right db :
-                tab_header *ptr;
+                table *ptr = (table*)malloc(sizeof(table));
                 bool isfound = find_table(token, ptr);
+                printf("You are now using kk '%s' table\n", ptr->header.name);
                 if (!isfound || ptr == NULL)
                 {
                     free(copie);
@@ -297,8 +296,9 @@ use_result use_tok_function(InputComand *CMD, tab_header *returned_tab)
                 }
                 else
                 {
+                    
                     returned_tab = ptr;
-                    printf("You are now using %s table\n", token);
+                    printf("You are now using '%s' table\n", ptr->header.name);
                 }
             }
 

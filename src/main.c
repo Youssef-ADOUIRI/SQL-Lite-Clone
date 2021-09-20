@@ -5,13 +5,16 @@
 #include "display.h"
 #include "tokenizer.h"
 #include "rows.h"
+#include "memory.h"
 
 #define Help_print() printf("\nEnter .tables to see all tables ( none : there's no table yet )\n\n")
 
-
 #define printError() printf("\nError Code : %d !!\n", errno)
 
+#define tablesCount 2
 
+unsigned int used_table = 0;
+unsigned int used_db = 0;
 
 tab_header *current_table;
 
@@ -56,13 +59,17 @@ int main(int argc, char *argv[])
         CMD->cmd[len - 1] = 0; // supprimer la \n
 
         //Processeur des commandes
-        if (CommandProcessor(CMD) == unknown)
+        typeCmd cmt =  CommandProcessor(CMD) ;
+        if ( cmt == unknown)
         {
             //throwCmd(CMD);
             continue;
         }
+        else if (cmt == exitCmd){break;}
         throwCmd(CMD);
     }
+    for (int i = 0; i < tablesCount; i++)
+        destroy_Table(tab_all[i]);
     destroy_all_tabheaders();
     return 0;
 }
@@ -78,7 +85,7 @@ typeCmd CommandProcessor(InputComand *CMD)
             //printf("EXIT\n");
 
             throwCmd(CMD);
-            exit(EXIT_SUCCESS);
+
         }
         else if (strcmp(CMD->cmd, ".help") == 0)
         {
@@ -105,13 +112,13 @@ typeCmd CommandProcessor(InputComand *CMD)
         if (strncmp(CMD->cmd, "insert", 6) == 0)
         {
             //insert cmd tokenizing
-            size_t count = insert_row_into(tab_all);
+            Insert_result result_insertion = insert_row_into(tab_all[used_table]);
             CMD->type = insertCmd;
             return insertCmd;
         }
         else if (strncmp(CMD->cmd, "select", 6) == 0)
-        {   
-            showTable(tab_all[0]);
+        {
+            showTable(*tab_all[used_table]);
             CMD->type = selectCmd;
             return selectCmd;
         }
@@ -122,7 +129,7 @@ typeCmd CommandProcessor(InputComand *CMD)
             char ptr_to_name[44];
             size_t cols_count = 0;
             tab_header headerOfTable;
-            create_result result_creation = create_Tokenizer(CMD, &COLS, &cols_count, ptr_to_name , &headerOfTable);
+            create_result result_creation = create_Tokenizer(CMD, &COLS, &cols_count, ptr_to_name, &headerOfTable);
             switch (result_creation)
             {
             case ERROR_AT_CREATION:
@@ -173,7 +180,7 @@ typeCmd CommandProcessor(InputComand *CMD)
         }
         else if (strncmp(CMD->cmd, "use", 3) == 0)
         {
-            tab_header *ptr = NULL;
+            table *ptr = NULL;
             use_result result_use = use_tok_function(CMD, ptr);
             switch (result_use)
             {
@@ -196,8 +203,25 @@ typeCmd CommandProcessor(InputComand *CMD)
                 return useCmd;
                 break;
             case FOUND:
-                if(ptr != NULL){
+
+                if (ptr != NULL)
+                {
                     current_table = ptr;
+
+                    for (int i = 0; i < 40; i++)
+                    {
+                        if (strcmp(current_table->name, tab_all[i]->header.name) == 0)
+                        {
+                            used_table = i;
+                            printf("5dddddddddd\n");
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    printf("out \n");
+                    return unknown;
                 }
                 break;
             default:
@@ -216,6 +240,3 @@ typeCmd CommandProcessor(InputComand *CMD)
         }
     }
 }
-
-
-

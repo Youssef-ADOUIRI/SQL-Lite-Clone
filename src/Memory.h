@@ -13,5 +13,7 @@ void *table_to_memory();
 void destroy_column(column *c);
 void destroy_list_ROWS(list_rows L);
 void destroy_list_COLS(listCols c);
+void destroy_Table(table *);
+void fKey();
 
 #endif
