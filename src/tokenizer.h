@@ -17,7 +17,7 @@ typedef enum {
 create_result create_Tokenizer(InputComand *CMD, listCols *tabCOLs , size_t*, char * ,  tab_header *);
 size_t insert_tokenizer(InputComand*);
 
-use_result use_tok_function(InputComand * , table *);
+table*  use_tok_function(InputComand * , use_result*);
 
 
 

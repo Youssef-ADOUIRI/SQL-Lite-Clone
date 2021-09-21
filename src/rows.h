@@ -9,9 +9,10 @@ typedef enum {
 }Insert_result;
 
 Insert_result insert_row_into(table*);
-
+listValues get_Values(table);
+size_t add_Value_ToList(caseValue* , listValues*);
 void add_row_into_list(row *, list_rows*);
-void destroy_row();
+
 
 
 

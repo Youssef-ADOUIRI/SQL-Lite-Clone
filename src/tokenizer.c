@@ -5,7 +5,11 @@
 
 #define dilim1 " ()"
 
-create_result create_Tokenizer(InputComand *CMD, listCols *tabCOLs, size_t *nbrCOlsResult, char nameResult[] , tab_header * headerOfTable)
+create_result create_Tokenizer(InputComand *CMD,
+                               listCols *tabCOLs,
+                               size_t *nbrCOlsResult,
+                               char nameResult[],
+                               tab_header *headerOfTable)
 {
 
     //start tokenizing
@@ -70,7 +74,7 @@ create_result create_Tokenizer(InputComand *CMD, listCols *tabCOLs, size_t *nbrC
             }
 
             DATA_NATURE type;
-            void *data;
+            size_t SIZE = 0;
             char *subtokens = strtok(token, ", "); //start tokinizing the token
 
             if (subtokens == NULL)
@@ -84,7 +88,8 @@ create_result create_Tokenizer(InputComand *CMD, listCols *tabCOLs, size_t *nbrC
             }
 
             char *typeData = strtok(NULL, " ");
-            if (typeData == NULL){
+            if (typeData == NULL)
+            {
                 SetColorRed(false);
                 printf("Error : Input fromat error ");
                 resetColor();
@@ -103,19 +108,12 @@ create_result create_Tokenizer(InputComand *CMD, listCols *tabCOLs, size_t *nbrC
                 return ERROR_AT_CREATION;
             }
 
-
-            data = transfertToType(typeData, &type);
-
-
-
-            addcolumn(tabCOLs, subtokens, data, type  , headerOfTable);
+            SIZE = transfertToType(typeData, &type);
+            addcolumn(tabCOLs, subtokens, SIZE, type, headerOfTable);
 
             size_t nbrCol = 1;
 
-
             subtokens = strtok(NULL, ", ");
-
-
 
             while (subtokens != NULL)
             {
@@ -133,17 +131,17 @@ create_result create_Tokenizer(InputComand *CMD, listCols *tabCOLs, size_t *nbrC
                     return ERROR_AT_CREATION;
                 }
 
-                data = transfertToType(typeData, &type);
-                addcolumn(tabCOLs, subtokens, data, type , headerOfTable);
+                SIZE = transfertToType(typeData, &type);
+                //printf("SIZE   : %d\n" , SIZE);
+                addcolumn(tabCOLs, subtokens, SIZE, type, headerOfTable);
                 subtokens = strtok(NULL, ", ");
             }
-            
-            //printTable_header(*tabCOLs); // debugging
             free(copie);
             copie = NULL;
-
+            headerOfTable->column_list_attributes = *tabCOLs;
+            strcpy(headerOfTable->name, nameResult);
             *nbrCOlsResult = nbrCol;
-
+            //printTable_header(headerOfTable->column_list_attributes);
             return TABLE_CREATION;
         }
         else if (strcmp(token, "database") == 0)
@@ -236,15 +234,16 @@ size_t insert_tokenizer(InputComand *CMD)
     copie = NULL;
 }
 
-use_result use_tok_function(InputComand *CMD, table *returned_tab)
+table *use_tok_function(InputComand *CMD, use_result *rUse)
 {
-
+    table *returned_tab = NULL;
     if (CMD->cmd == NULL || strlen(CMD->cmd) < 1)
     {
         SetColorRed(true);
         printf("Error : NO INPUT ");
         resetColor();
-        return ERROR_AT_CMD;
+        *rUse = ERROR_AT_CMD;
+        return NULL;
     }
 
     char *copie = (char *)malloc(sizeof(char) * (CMD->LenOfCmd + 1));
@@ -258,7 +257,8 @@ use_result use_tok_function(InputComand *CMD, table *returned_tab)
         resetColor();
         free(copie);
         copie = NULL;
-        return ERROR_AT_CMD;
+        *rUse = ERROR_AT_CMD;
+        return NULL;
     }
 
     token = strtok(NULL, " "); // gives : table or database
@@ -273,7 +273,8 @@ use_result use_tok_function(InputComand *CMD, table *returned_tab)
         free(copie);
         copie = NULL;
 
-        return NON_SPECIFIED_use;
+        *rUse = NON_SPECIFIED_use;
+        return NULL;
     }
     else
     {
@@ -285,23 +286,22 @@ use_result use_tok_function(InputComand *CMD, table *returned_tab)
             if (token != NULL)
             {
                 //return a pointer to the right db :
-                table *ptr = (table*)malloc(sizeof(table));
-                bool isfound = find_table(token, ptr);
-                printf("You are now using kk '%s' table\n", ptr->header.name);
-                if (!isfound || ptr == NULL)
+                table *ptr = find_table(token); // search by name
+                //printTable_header(ptr->header->column_list_attributes);
+                //printf("You are now using hh '%s' table\n", ptr->header->name);
+                if (ptr == NULL)
                 {
                     free(copie);
                     copie = NULL;
-                    return NON_FOUND;
+                    *rUse = NON_FOUND;
+                    return NULL;
                 }
                 else
                 {
-                    
                     returned_tab = ptr;
-                    printf("You are now using '%s' table\n", ptr->header.name);
+                    printf("You are now using '%s' table\n", returned_tab->header->name);
                 }
             }
-
             else
             {
                 free(copie);
@@ -309,14 +309,16 @@ use_result use_tok_function(InputComand *CMD, table *returned_tab)
                 SetColorRed(false);
                 printf("Error : insufficient arguments : add a name");
                 resetColor();
-                return ERROR_AT_CMD;
+                *rUse = ERROR_AT_CMD;
+                return NULL;
             }
         }
         else if (strcmp(token, "database") == 0)
         {
-            token = strtok(NULL, " "); //table name
+            token = strtok(NULL, " "); //db name
 
-            if (token != NULL){
+            if (token != NULL)
+            {
                 // point to the table
             }
             else
@@ -325,8 +327,8 @@ use_result use_tok_function(InputComand *CMD, table *returned_tab)
                 printf("Error : insufficient arguments : add a name");
                 resetColor();
                 free(copie);
-                copie = NULL;
-                return ERROR_AT_CMD;
+                *rUse = ERROR_AT_CMD;
+                return NULL;
             }
         }
         else
@@ -337,11 +339,13 @@ use_result use_tok_function(InputComand *CMD, table *returned_tab)
             resetColor();
             free(copie);
             copie = NULL;
-            return NON_SPECIFIED_use;
+            *rUse = NON_SPECIFIED_use;
+            return NULL;
         }
     }
 
     free(copie);
     copie = NULL;
-    return FOUND;
+    *rUse = FOUND;
+    return returned_tab;
 }

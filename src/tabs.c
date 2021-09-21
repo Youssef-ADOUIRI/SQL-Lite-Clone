@@ -2,20 +2,18 @@
 #include "funcs.h"
 #include "memory.h"
 
-
-
 static u_int tab_count_db = 0;
 
-void addcolumn(listCols *List, char *titre, void *data, DATA_NATURE VarType, tab_header *headerTab)
+void addcolumn(listCols *List, char *titre, size_t memorySize, DATA_NATURE VarType, tab_header *headerTab)
 {
     listCols col = (column *)malloc(sizeof(column));
     col->title = (char *)malloc(sizeof(char) * (strlen(titre) + 1));
     strcpy(col->title, titre);
-    col->dataCase = data;
     col->type = VarType;
+    col->memorySize = memorySize;
     
     col->next = NULL;
-   
+
     if (*List == NULL)
     {
         *List = col;
@@ -33,15 +31,12 @@ void addcolumn(listCols *List, char *titre, void *data, DATA_NATURE VarType, tab
     return;
 }
 
-void addTableTo(listCols List, char name[], u_int colsCount)
+void addTableTo(table *tab)
 {
-    tab_header tab;
-    if (List != NULL)
-    {   
-        tab.column_list_attributes = List;
-        strcpy(tab.name, name);
-        tab.cols_count = colsCount;
-        addHeadersTab(tab);
+    if (tab != NULL)
+    {
+        tab_all[tab_count_db] = tab;
+        tab_count_db++;
     }
     else
     {
@@ -49,35 +44,15 @@ void addTableTo(listCols List, char name[], u_int colsCount)
         printf("Error has occurred");
         resetColor();
     }
-    //free(name);
-}
-
-void addHeadersTab(tab_header TabHeader)
-{
-    tab_all[tab_count_db] = (table*)malloc(sizeof(table));
-    (tab_all[tab_count_db])->header = TabHeader;
-    tab_all[tab_count_db]->rows = NULL;
-    tab_count_db++;
-}
-
-void destroy_all_tabHeaders()
-{
-    destroyTabHeader(tab_all[0]->header);
-}
-
-void destroyTabHeader(tab_header TabHeader)
-{
-    destroy_list_COLS(TabHeader.column_list_attributes);    
 }
 
 // Virtual Machine
-void *transfertToType(char *string, DATA_NATURE *type)
+size_t transfertToType(char *string, DATA_NATURE *type)
 {
 
     if (strncmp(string, "varchar", 7) == 0)
     {
         //string type
-
         *type = TEXT;
         char *copie = (char *)malloc(sizeof(char) * (strlen(string) + 1));
         strcpy(copie, string);
@@ -86,6 +61,7 @@ void *transfertToType(char *string, DATA_NATURE *type)
         typeEntr = strtok_rh(NULL, "[]", &saveptr);
         //verification
         size_t sizeSTR = atoi(typeEntr);
+        //printf("int : %d , str : %s\n", sizeSTR , typeEntr);
         if (sizeSTR == 0 || typeEntr == NULL)
         {
             SetColorRed(true);
@@ -93,32 +69,24 @@ void *transfertToType(char *string, DATA_NATURE *type)
             resetColor();
             free(copie);
             copie = NULL;
-            return NULL;
+            return 0;
         }
-        char *charType = NULL;
-        charType = (char *)malloc(sizeof(char) * sizeSTR);
 
-        strcpy(charType, "");
         free(copie);
         copie = NULL;
-        return charType;
+        return sizeof(char) * sizeSTR;
     }
     else if (strncmp(string, "int", 3) == 0)
     {
         *type = INTEGER;
 
-        int *integerType = (int *)malloc(sizeof(int));
-        *integerType = 0; // intitialiser
-        return integerType;
+        return sizeof(int);
     }
     else if (strncmp(string, "float", 5) == 0)
     {
         *type = REAL;
 
-        float *reelType = (float *)malloc(sizeof(float));
-        *reelType = 0.0f; // intitialiser
-
-        return reelType;
+        return sizeof(float);
     }
     //add the others later for test
     else if (string == NULL)
@@ -127,59 +95,75 @@ void *transfertToType(char *string, DATA_NATURE *type)
 
         *type = TEXT;
 
-        char *charType = (char *)malloc(sizeof(char) * STANDARD_ALLOCATION_SIZE);
-
-        strcpy(charType, "");
-
-        return charType;
+        return 44 * sizeof(char); //don't ask me why
     }
     else
     {
         SetColorRed(false);
-        printf("Error Format : Data type '%S' not recognized", string);
+        printf("Error Format : Data type '%s' not recognized", string);
         resetColor();
-        return NULL;
+        return 0;
+    }
+}
+
+void print_Constrains(column c)
+{
+
+    if (c.constrains.isPriKey)
+    {
+        printf("PRIMARY_KEY");
+    }
+    else if (c.constrains.isForgKey)
+    {
+        printf("FOREIGN_KEY");
+    }
+    else
+    {
+        if (c.constrains.isUnique)
+        {
+            printf("UNIQUE");
+        }
+        else if (c.constrains.isNotNull)
+        {
+            printf("NOT_NULL");
+        }
+    }
+    if (c.constrains.isAutoInc)
+    {
+        printf("AUTO_INCREMENT");
     }
 }
 
 void printTable_header(listCols L)
 {
-
     listCols temp = L;
-    // tous les types de pointeur
-    
-    int *inte;
-    char *text;
-    float *reel;
-
-    
     printf("[");
     if (temp != NULL)
     {
-
         printf("%s ", temp->title);
-        
+
         switch (temp->type)
         {
         case INTEGER:
-            inte = (int *)(temp->dataCase);
-            printf("%d ", *inte);
+            //inte = (int *)(temp->dataCase);
+            printf("(INTEGER) ");
+            print_Constrains(*temp);
             break;
         case TEXT:
-            text = (char *)(temp->dataCase);
-            printf("%s ", text);
+            //text = (char *)(temp->dataCase);
+            printf("(VARCHAR[%d]) ", temp->memorySize / sizeof(char));
+            print_Constrains(*temp);
             break;
         case REAL:
-            reel = (float *)(temp->dataCase);
-            printf("%f ", *reel);
+            //reel = (float *)(temp->dataCase);
+            printf("(FLOAT) ");
+            print_Constrains(*temp);
             break;
         default:
             printf("Corupted Format !\n");
             break;
         }
-
     }
-
 
     while (temp->next != NULL)
     {
@@ -188,16 +172,19 @@ void printTable_header(listCols L)
         switch (temp->type)
         {
         case INTEGER:
-            inte = (int *)(temp->dataCase);
-            printf("%d ", *inte);
+            //inte = (int *)(temp->dataCase);
+            printf("(INTEGER) ");
+            print_Constrains(*temp);
             break;
         case TEXT:
-            text = (char *)(temp->dataCase);
-            printf("%s ", text);
+            //text = (char *)(temp->dataCase);
+            printf("(VARCHAR[%d]) ", temp->memorySize / sizeof(char));
+            print_Constrains(*temp);
             break;
         case REAL:
-            reel = (float *)(temp->dataCase);
-            printf("%f ", *reel);
+            //reel = (float *)(temp->dataCase);
+            printf("(FLOAT) ");
+            print_Constrains(*temp);
             break;
         default:
             printf("Corupted Format !\n");
@@ -208,39 +195,30 @@ void printTable_header(listCols L)
     printf("]\n");
 }
 
-void printTable(table * t)
-{
-    //showTable();
-}
-
 void showALLTabs()
 {
     if (tab_count_db <= 0)
     {
-        printf("none");
+        printf("NONE");
     }
     else
     {
         for (int i = 0; i < tab_count_db; i++)
         {
-            printf("%s ",tab_all[i]->header.name);
+            printf("%s ", tab_all[i]->header->name);
         }
     }
     printf("\n");
 }
 
-bool find_table(const char *name, table *ptr_to_found)
+table *find_table(const char *name)
 {
     for (int i = 0; i < tab_count_db; i++)
     {
-        if (strcmp(tab_all[i]->header.name, name) == 0)
+        if (strcmp(tab_all[i]->header->name, name) == 0)
         {
-            ptr_to_found = tab_all[i];
-            
-            printf("n : %s\n" , ptr_to_found->header.name);
-            return true;
+            return tab_all[i];
         }
     }
-    ptr_to_found = NULL;
-    return false;
+    return NULL;
 }

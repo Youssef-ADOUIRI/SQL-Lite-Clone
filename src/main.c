@@ -20,17 +20,19 @@ tab_header *current_table;
 
 FILE *dataFile = NULL;
 
+typeCmd CommandProcessor(InputComand *);
+
 int main(int argc, char *argv[])
 {
     //intialzer
-    dataFile = fopen("data.bin", "rb");
-    if (dataFile == NULL)
-    {
-        //The data file does not exist
-        dataFile = fopen("data.bin", "wb");
-    }
-    //close
-    fclose(dataFile);
+    // dataFile = fopen("data.bin", "rb");
+    // if (dataFile == NULL)
+    // {
+    //     //The data file does not exist
+    //     dataFile = fopen("data.bin", "wb");
+    // }
+    // //close
+    // fclose(dataFile);
 
     printf("\n------------Welcome to sqlLite clone------------\nEnter .help to get help page\nEnter .exit to exit\n");
 
@@ -46,7 +48,9 @@ int main(int argc, char *argv[])
             resetColor();
             exit(EXIT_FAILURE);
         }
+
         int len = 0;
+        fflush(stdin);
         len = getline(&(CMD->cmd), &(CMD->SizeOfCmd), stdin);
         if (len == -1)
         {
@@ -55,24 +59,29 @@ int main(int argc, char *argv[])
             exit(EXIT_FAILURE);
         }
         CMD->LenOfCmd = len;
-
         CMD->cmd[len - 1] = 0; // supprimer la \n
 
         //Processeur des commandes
         typeCmd cmt =  CommandProcessor(CMD) ;
         if ( cmt == unknown)
         {
-            //throwCmd(CMD);
-            continue;
+            printError();
         }
-        else if (cmt == exitCmd){break;}
+        else if(cmt == exitCmd){
+            throwCmd(CMD);
+            break;
+        }
         throwCmd(CMD);
     }
+
     for (int i = 0; i < tablesCount; i++)
         destroy_Table(tab_all[i]);
-    destroy_all_tabheaders();
+    
+
     return 0;
 }
+
+
 
 typeCmd CommandProcessor(InputComand *CMD)
 {
@@ -82,10 +91,7 @@ typeCmd CommandProcessor(InputComand *CMD)
         CMD->isMetaCmd = true;
         if (strcmp(CMD->cmd, ".exit") == 0)
         {
-            //printf("EXIT\n");
-
-            throwCmd(CMD);
-
+            return exitCmd;
         }
         else if (strcmp(CMD->cmd, ".help") == 0)
         {
@@ -118,7 +124,7 @@ typeCmd CommandProcessor(InputComand *CMD)
         }
         else if (strncmp(CMD->cmd, "select", 6) == 0)
         {
-            showTable(*tab_all[used_table]);
+            showTable(tab_all[used_table]);
             CMD->type = selectCmd;
             return selectCmd;
         }
@@ -126,10 +132,11 @@ typeCmd CommandProcessor(InputComand *CMD)
         {
             CMD->type = createCmd;
             listCols COLS = NULL;
-            char ptr_to_name[44];
+            char ptr_to_name[440];
             size_t cols_count = 0;
-            tab_header headerOfTable;
-            create_result result_creation = create_Tokenizer(CMD, &COLS, &cols_count, ptr_to_name, &headerOfTable);
+            tab_header* headerOfTable = (tab_header*)malloc(sizeof(tab_header));
+            create_result result_creation = create_Tokenizer(CMD, &COLS, &cols_count, ptr_to_name, headerOfTable);
+
             switch (result_creation)
             {
             case ERROR_AT_CREATION:
@@ -152,10 +159,12 @@ typeCmd CommandProcessor(InputComand *CMD)
             case TABLE_CREATION:
                 if (cols_count != 0)
                 {
-                    printf("Done processing!\nColumns count is %d\n", cols_count);
-                    addTableTo(COLS, ptr_to_name, cols_count);
-                    printf("out from table adding \n");
-                    printTable_header(COLS);
+                    printf("NAME : %s\n", headerOfTable->name);
+                    //printTable_header(COLS);
+                    table * t = NULL;
+                    t = newTable(headerOfTable);
+                    addTableTo(t);
+                    printTable_header(t->header->column_list_attributes);
                     return createCmd;
                 }
                 else
@@ -181,7 +190,8 @@ typeCmd CommandProcessor(InputComand *CMD)
         else if (strncmp(CMD->cmd, "use", 3) == 0)
         {
             table *ptr = NULL;
-            use_result result_use = use_tok_function(CMD, ptr);
+            use_result result_use= unknown;
+            ptr = use_tok_function(CMD, &result_use);
             switch (result_use)
             {
             case ERROR_AT_CMD:
@@ -206,14 +216,13 @@ typeCmd CommandProcessor(InputComand *CMD)
 
                 if (ptr != NULL)
                 {
-                    current_table = ptr;
+                    current_table = ptr->header;
 
                     for (int i = 0; i < 40; i++)
                     {
-                        if (strcmp(current_table->name, tab_all[i]->header.name) == 0)
+                        if (strcmp(current_table->name, tab_all[i]->header->name) == 0)
                         {
                             used_table = i;
-                            printf("5dddddddddd\n");
                             break;
                         }
                     }

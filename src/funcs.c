@@ -28,31 +28,33 @@ void *ptrToType(DATA_NATURE type, void *ptr)
     }
 }
 
-void inputData(DATA_NATURE type, void *ptr)
+void* inputData(DATA_NATURE type, size_t SIZE)
 {
-    int *inte;
-    char *text;
-    float *real;
+    int *inte = (int*)malloc(sizeof(int));
+    char *text = (char*)malloc(SIZE);
+    float *real = (float*)malloc(sizeof(float));
+    fflush(stdin);
     switch (type)
     {
     case INTEGER:
-        inte = (int *)ptr;
         scanf("%d", inte);
-        ptr = (int *)inte;
+        return inte;
         break;
     case TEXT:
-        text = (char *)ptr;
-        printf("(lenght : %d", strlen(text));
-        scanf("%s", ptr);
+        printf("[Max lenght : %d]", SIZE/(sizeof(char)) );
+        scanf("%s", text);
+        fKey();
+        return text;
         break;
     case REAL:
-        real = (float *)ptr;
         scanf("%f", real);
+        return real;
         break;
     default:
+        return NULL;
         break;
     }
-    fKey();
+
 }
 
 char *strtok_rh(char *str, const char *delim, char **nextp) // found in https://stackoverflow.com/questions/12975022/strtok-r-for-mingw

@@ -8,15 +8,14 @@
 table *tab_all[40];
 
 
-void addcolumn(listCols *List, char *titre, void *dataType, DATA_NATURE VarType , tab_header*);
-void addTableTo(listCols List ,char* , u_int);
-bool find_table(const char* , table *);
-void addHeadersTab(tab_header);
+void addcolumn(listCols *List, char *titre, size_t memorySize, DATA_NATURE VarType, tab_header *headerTab);
+void addTableTo(table*);
+table* find_table(const char*);
+void print_Constrains(column);
 void destroy_all_tabHeaders(void);
-void destroyTabHeader(tab_header);
-void *transfertToType(char *, DATA_NATURE *);
+
+size_t transfertToType(char *, DATA_NATURE *);
 void showALLTabs();
-void printTable(table*);
 void printTable_header(listCols);
 
 
