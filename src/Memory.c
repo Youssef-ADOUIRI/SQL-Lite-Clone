@@ -69,8 +69,6 @@ table *newTable(tab_header *head)
     tab->row_count = 0;
     tab->rows = NULL;
     
-
-
     return tab;
 }
 

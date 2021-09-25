@@ -2,9 +2,10 @@
 CC = gcc 
 CCFLAGS = -g -Wall
 
+OBJECTS = main.o funcs.o tokenizer.o tabs.o Memory.o rows.o display.o pager.o B_Tree.o
 
-prog: main.o funcs.o tokenizer.o tabs.o Memory.o rows.o display.o
-	$(CC) main.o funcs.o tokenizer.o tabs.o Memory.o rows.o display.o -Wall -o prog
+prog: $(OBJECTS)
+	$(CC) $(OBJECTS) -Wall -o prog
 
 # main.o: main.c
 # 	$(CC) -c main.c

@@ -3,11 +3,12 @@
 
 #include "structures.h"
 
-#define MAX_PAGE_SIZE 50
+
+#define PAGE_SIZE 8162 // 8 kB
 
 InputComand *NewCmd();
 void throwCmd(InputComand *);
-
+Page *newPage();
 row *newRow(listValues);
 caseValue *newCaseVal(column);
 table *newTable(tab_header*);

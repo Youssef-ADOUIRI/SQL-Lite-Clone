@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "display.h"
 #include "tabs.h"
+#include "pager.h"
+#include "memory.h"
 
 void printDB()
 {
@@ -44,8 +46,16 @@ void showTable(table *TABLE)
     list_rows ROWS_LIST = TABLE->rows;
     while (ROWS_LIST != NULL)
     {
+        pRow p = makeCompactRow(ROWS_LIST);
+        printf("First conv succes\n");
+        row *r = makeLsitRow(p, *head);
+        printf("Second conv succes\n");
+        print_Row(r);
+        free(p.Values);
+        destroy_row(r);
+        /*
         listValues L = ROWS_LIST->valuesList;
-        printf("|");
+        printf("|%d " , ROWS_LIST->TotalSize );
         while (L != NULL)
         {
             
@@ -58,6 +68,7 @@ void showTable(table *TABLE)
 
             L = L->next;
         }
+        */
         ROWS_LIST = ROWS_LIST->next;
         printf("\n");
     }
@@ -89,12 +100,33 @@ int print_unkown(caseValue L)
         break;
     case REAL:
         reel = (float *)(temp.data);
-        printf("%.2f     ", *reel);
+        printf("%.2f  ", *reel);
         s = snprintf(NULL, 0, "%.2f", *reel);
         if (s > 10)
             s = 10;
         return s;
         break;
+    default:
+        printf("NULL");
+        break;
     }
     return s;
+}
+
+void print_Row(row *pr)
+{
+
+    if (pr == NULL)
+    {
+        printf("NULL\n");
+        return;
+    }
+    listValues L = pr->valuesList;
+    printf("| ");
+    while (L != NULL)
+    {
+        int x = print_unkown(*L);
+        printf(" | ");
+        L = L->next;
+    }
 }

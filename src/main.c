@@ -115,7 +115,7 @@ typeCmd CommandProcessor(InputComand *CMD)
         /*toknizer*/
         CMD->isMetaCmd = false;
         // insert or select
-        if (strncmp(CMD->cmd, "insert", 6) == 0)
+        if (strncmp(CMD->cmd, "insert into", 11) == 0)
         {
             //insert cmd tokenizing
             Insert_result result_insertion = insert_row_into(tab_all[used_table]);
@@ -172,8 +172,6 @@ typeCmd CommandProcessor(InputComand *CMD)
                     SetColorRed(true);
                     printf("Error during the tokinizing of this command");
                     resetColor();
-                    // free(ptr_to_name);
-                    // ptr_to_name = NULL;
                     return createCmd;
                 }
                 break;
@@ -181,10 +179,6 @@ typeCmd CommandProcessor(InputComand *CMD)
                 return unknown;
                 break;
             }
-
-            // free(ptr_to_name);
-            // ptr_to_name = NULL;
-
             return createCmd;
         }
         else if (strncmp(CMD->cmd, "use", 3) == 0)
