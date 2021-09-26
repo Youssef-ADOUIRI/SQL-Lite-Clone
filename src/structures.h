@@ -7,18 +7,19 @@
 #include <stdbool.h>
 #include <string.h>
 
-
-
 #define MAX_HEADER_NAME 60
-//char DB_NAME[45] = "db";
 
 //if using wingw32
 typedef unsigned int u_int;
 
-typedef enum{
-    NOT_NULL , UNIQUE , PRIMARY_KEY , 
-    FOREIGN_KEY , AUTO_INCREMENT
-}Constrains;
+typedef enum
+{
+    NOT_NULL,
+    UNIQUE,
+    PRIMARY_KEY,
+    FOREIGN_KEY,
+    AUTO_INCREMENT
+} Constrains;
 
 enum typeCmd
 {
@@ -60,7 +61,7 @@ typedef struct InputComand InputComand;
 
 /* TABLES STRUCTURE */
 
-typedef struct 
+typedef struct
 {
     /*constrains*/
     bool isUnique;
@@ -69,7 +70,6 @@ typedef struct
     bool isForgKey;
     bool isAutoInc;
 } CONSTRAINS_DEF;
-
 
 struct column
 {
@@ -85,29 +85,26 @@ struct column
 typedef struct column column;
 typedef column *listCols;
 
-
 struct caseValue
 {
     void *data;
     DATA_NATURE type;
     size_t memorySize;
-    struct caseValue * next;
+    struct caseValue *next;
     //DATA_NATURE type;
 };
 typedef struct caseValue caseValue;
-typedef caseValue * listValues;
-
+typedef caseValue *listValues;
 
 struct row
 {
     //listCols head;
     listValues valuesList;
     size_t TotalSize;
-    struct row* next;
+    struct row *next;
 };
 typedef struct row row;
-typedef row * list_rows;
-
+typedef row *list_rows;
 
 typedef struct
 {
@@ -116,13 +113,27 @@ typedef struct
     u_int cols_count;
 } tab_header;
 
-
-typedef struct {
+typedef struct
+{
     tab_header *header;
     size_t row_count;
     list_rows rows;
-}table;
+} table;
 
+
+#define MAX_ROW_PER_PAGE 12
+
+typedef struct
+{
+    void* Values; // compact format
+}pRow;
+
+
+typedef struct
+{
+    int index;
+    pRow rows[MAX_ROW_PER_PAGE];
+}Page;
 
 
 #endif

@@ -10,6 +10,6 @@ void SetColorRed(bool Bold);
 void resetColor(void);
 void showTable( table*);
 int print_unkown(caseValue );
-
+void print_Row(row*);
 
 #endif
