@@ -72,6 +72,11 @@ table *newTable(tab_header *head)
     return tab;
 }
 
+
+void serilizehead(void*place , char* str){
+    memcpy(place , str , strlen(str) * sizeof(char));
+}
+
 void throwCmd(InputComand *CMD)
 {
     free(CMD->cmd);

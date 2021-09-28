@@ -12,6 +12,7 @@ Page *newPage();
 row *newRow(listValues);
 caseValue *newCaseVal(column);
 table *newTable(tab_header*);
+void serilizehead(void*place , char*);
 void destroy_row(row *);
 void destroy_column(column *);
 void destroy_List_Cases(listValues);

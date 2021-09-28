@@ -8,9 +8,13 @@
 #include <string.h>
 
 #define MAX_HEADER_NAME 60
-
+#define MAX_PAGES_TABLE 45
+#define MAX_TABLES 50
+#define fileNAME "data.bin"
+#define META_DATA_OFFSET 0 // currently 0
 //if using wingw32
 typedef unsigned int u_int;
+
 
 typedef enum
 {
@@ -108,9 +112,10 @@ typedef row *list_rows;
 
 typedef struct
 {
+    int index;
     char name[MAX_HEADER_NAME];
     listCols column_list_attributes;
-    u_int cols_count;
+    size_t cols_count;
 } tab_header;
 
 typedef struct
@@ -120,20 +125,47 @@ typedef struct
     list_rows rows;
 } table;
 
-
 #define MAX_ROW_PER_PAGE 12
 
 typedef struct
 {
-    void* Values; // compact format
-}pRow;
-
+    void *Values; // compact format
+} pRow;
 
 typedef struct
 {
     int index;
-    pRow rows[MAX_ROW_PER_PAGE];
-}Page;
+    size_t Rows_Count;
+    void *ptr_Rows;
+} Page;
 
+typedef struct
+{
+    tab_header *header;
+    size_t row_count;
+} pTable;
+
+struct t_Cursor
+{
+    int index;
+    pTable t;
+    Page page;
+    // P_Cursor;
+    // R_Cursor;
+};
+typedef struct t_Cursor * T_Cursor;
+
+
+tab_header *preTabs[MAX_TABLES];
+
+// typedef struct
+// {
+//     int index;
+// } P_Cursor;
+
+// typedef struct
+// {
+//     int index;
+// } R_Cursor;
 
 #endif

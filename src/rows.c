@@ -5,9 +5,12 @@
 #include "tabs.h"
 #include "display.h"
 
+extern u_int tab_count_db;
+
 Insert_result insert_row_into(table *TABLE)
 {
-    table* found = find_table(TABLE->header->name);
+    table* found =NULL;
+    // find_table(TABLE->header->name);
     if (!found)
     {
         return TABLE_NOT_FOUND;
