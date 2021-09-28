@@ -41,7 +41,7 @@ void* inputData(DATA_NATURE type, size_t SIZE)
         return inte;
         break;
     case TEXT:
-        printf("[Max lenght : %d]", SIZE/(sizeof(char)) );
+        printf("[Max lenght is %d] : ", SIZE/(sizeof(char)) );
         scanf("%s", text);
         fKey();
         return text;

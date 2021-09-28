@@ -6,6 +6,7 @@
 #include "tokenizer.h"
 #include "rows.h"
 #include "memory.h"
+#include "pager.h"
 
 #define Help_print() printf("\nEnter .tables to see all tables ( none : there's no table yet )\n\n")
 
@@ -13,10 +14,16 @@
 
 #define tablesCount 2
 
+
+
 unsigned int used_table = 0;
 unsigned int used_db = 0;
 
+ u_int tab_count_db;
+
 tab_header *current_table;
+
+T_Cursor cursor;  
 
 FILE *dataFile = NULL;
 
@@ -33,7 +40,7 @@ int main(int argc, char *argv[])
     // }
     // //close
     // fclose(dataFile);
-
+    tab_count_db = 0;
     printf("\n------------Welcome to sqlLite clone------------\nEnter .help to get help page\nEnter .exit to exit\n");
 
     while (1)
@@ -62,12 +69,13 @@ int main(int argc, char *argv[])
         CMD->cmd[len - 1] = 0; // supprimer la \n
 
         //Processeur des commandes
-        typeCmd cmt =  CommandProcessor(CMD) ;
-        if ( cmt == unknown)
+        typeCmd cmt = CommandProcessor(CMD);
+        if (cmt == unknown)
         {
             printError();
         }
-        else if(cmt == exitCmd){
+        else if (cmt == exitCmd)
+        {
             throwCmd(CMD);
             break;
         }
@@ -75,13 +83,10 @@ int main(int argc, char *argv[])
     }
 
     for (int i = 0; i < tablesCount; i++)
-        destroy_Table(tab_all[i]);
-    
+        //destroy_Table(tab_all[i]);
 
     return 0;
 }
-
-
 
 typeCmd CommandProcessor(InputComand *CMD)
 {
@@ -118,13 +123,34 @@ typeCmd CommandProcessor(InputComand *CMD)
         if (strncmp(CMD->cmd, "insert into", 11) == 0)
         {
             //insert cmd tokenizing
-            Insert_result result_insertion = insert_row_into(tab_all[used_table]);
+            //Insert_result result_insertion = insert_row_into(tab_all[used_table]);
+            listValues LVAL = NULL;
+            T_Cursor cur = (T_Cursor)malloc(sizeof(struct t_Cursor));
+            size_t CmdCount = insert_tokenizer(CMD, LVAL, cur);
+
+            size_t realCount = cur->t.header->cols_count;
+
+            if (CmdCount != realCount )
+            {
+                SetColorRed(true);
+                printf("Not enough argments in command");
+                resetColor();
+                free(cur);
+                return unknown;
+            }
+
+            row * r = newRow(LVAL);
+
+            print_Row(r);
+            free(cur);
+            // (cur->page) = *getPage( , cur->t.index );
             CMD->type = insertCmd;
             return insertCmd;
         }
         else if (strncmp(CMD->cmd, "select", 6) == 0)
         {
-            showTable(tab_all[used_table]);
+            //showTable(tab_all[used_table]);
+            select_tok();
             CMD->type = selectCmd;
             return selectCmd;
         }
@@ -134,9 +160,9 @@ typeCmd CommandProcessor(InputComand *CMD)
             listCols COLS = NULL;
             char ptr_to_name[440];
             size_t cols_count = 0;
-            tab_header* headerOfTable = (tab_header*)malloc(sizeof(tab_header));
+            tab_header *headerOfTable = (tab_header *)malloc(sizeof(tab_header));
             create_result result_creation = create_Tokenizer(CMD, &COLS, &cols_count, ptr_to_name, headerOfTable);
-
+            headerOfTable->index = tab_count_db + 1;
             switch (result_creation)
             {
             case ERROR_AT_CREATION:
@@ -161,10 +187,25 @@ typeCmd CommandProcessor(InputComand *CMD)
                 {
                     printf("NAME : %s\n", headerOfTable->name);
                     //printTable_header(COLS);
-                    table * t = NULL;
+                    table *t = NULL;
                     t = newTable(headerOfTable);
-                    addTableTo(t);
+                    addTableTo(headerOfTable);
                     printTable_header(t->header->column_list_attributes);
+                    dataFile = fopen("data.bin" , "rb+");
+                    if(dataFile != NULL){
+                        fseek(dataFile , META_DATA_OFFSET , SEEK_SET);
+                        
+                        size_t size = (strlen(CMD->cmd)+1)*sizeof(char);
+                        void * bufferHead = malloc(size);
+                        serilizehead(bufferHead  , CMD->cmd );
+                        fwrite(bufferHead , size , 1 , dataFile);
+                        fclose(dataFile);
+                        printTable_header(preTabs[0]->column_list_attributes);
+                    }
+                    else{
+                        printf("Unable to open data file!\n");
+                    }
+                    
                     return createCmd;
                 }
                 else
@@ -184,7 +225,7 @@ typeCmd CommandProcessor(InputComand *CMD)
         else if (strncmp(CMD->cmd, "use", 3) == 0)
         {
             table *ptr = NULL;
-            use_result result_use= unknown;
+            use_result result_use = unknown;
             ptr = use_tok_function(CMD, &result_use);
             switch (result_use)
             {
@@ -214,7 +255,7 @@ typeCmd CommandProcessor(InputComand *CMD)
 
                     for (int i = 0; i < 40; i++)
                     {
-                        if (strcmp(current_table->name, tab_all[i]->header->name) == 0)
+                        if (strcmp(current_table->name, preTabs[i]->name) == 0)
                         {
                             used_table = i;
                             break;

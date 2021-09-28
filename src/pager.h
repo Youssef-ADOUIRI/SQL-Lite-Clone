@@ -3,9 +3,11 @@
 
 #include "structures.h"
 
-
-
-pRow makeCompactRow(row * );
+int getID(char * str);
+ tab_header* getTablebyID(int );
+void addRowToPage(Page* page , row* r);
+Page* getPage(int , int );
+void makeCompactRow( void * , row * );
 row* makeLsitRow(pRow , tab_header);
 
 

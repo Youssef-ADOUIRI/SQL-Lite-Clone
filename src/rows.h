@@ -14,11 +14,4 @@ size_t add_Value_ToList(caseValue* , listValues*);
 void add_row_into_list(row *, list_rows*);
 
 
-
-
-
-
-
-
-
 #endif

@@ -23,54 +23,41 @@ void resetColor(void)
     printf("\n");
 }
 
-void showTable(table *TABLE)
+void showTable(int ID)
 {
-    if (TABLE == NULL)
-    {
-        printf("NONE\n");
-        return;
-    }
-    tab_header *head = TABLE->header;
+
+    tab_header *head = getTablebyID(ID);
     printTable_header(head->column_list_attributes);
     listCols tempCol = head->column_list_attributes;
-    printf("\n-----------------------------------------------------------------------\n|");
+    printf("\n---------------------------------------------------------------------\n|");
     while (tempCol != NULL)
     {
-        printf("    ");
+        printf("\t");
         printf("%s", tempCol->title);
-        printf("    |");
+        printf("\t|");
         tempCol = tempCol->next;
     }
-    printf("\n------------------------------------------------------------------------\n", TABLE->row_count);
+    printf("\n----------------------------------------------------------------------\n");
     tempCol = head->column_list_attributes;
+    
     list_rows ROWS_LIST = TABLE->rows;
     while (ROWS_LIST != NULL)
     {
-        pRow p = makeCompactRow(ROWS_LIST);
-        printf("First conv succes\n");
-        row *r = makeLsitRow(p, *head);
-        printf("Second conv succes\n");
-        print_Row(r);
-        free(p.Values);
-        destroy_row(r);
-        /*
         listValues L = ROWS_LIST->valuesList;
-        printf("|%d " , ROWS_LIST->TotalSize );
+        
         while (L != NULL)
         {
-            
+            printf("|\t");
             int y = strlen(tempCol->title);
             int x = print_unkown(*L);
 
-            for (int i = 0; i < y - x + 8; i++)
-                printf(" ");
-            printf("|");
-
+            // for (int i = 0; i < y - x + 8; i++)
+            //     printf(" ");
+            printf("\t");
             L = L->next;
-        }
-        */
+        }  
         ROWS_LIST = ROWS_LIST->next;
-        printf("\n");
+        printf("|\n");
     }
 }
 
@@ -100,7 +87,7 @@ int print_unkown(caseValue L)
         break;
     case REAL:
         reel = (float *)(temp.data);
-        printf("%.2f  ", *reel);
+        printf("%.2f", *reel);
         s = snprintf(NULL, 0, "%.2f", *reel);
         if (s > 10)
             s = 10;

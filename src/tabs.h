@@ -5,12 +5,10 @@
 
 #define STANDARD_ALLOCATION_SIZE 45
 
-table *tab_all[40];
-
 
 void addcolumn(listCols *List, char *titre, size_t memorySize, DATA_NATURE VarType, tab_header *headerTab);
-void addTableTo(table*);
-table* find_table(const char*);
+void addTableTo(tab_header*);
+//table* find_table(const char*);
 void print_Constrains(column);
 void destroy_all_tabHeaders(void);
 

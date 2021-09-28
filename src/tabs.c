@@ -2,7 +2,7 @@
 #include "funcs.h"
 #include "memory.h"
 
-static u_int tab_count_db = 0;
+extern u_int tab_count_db;
 
 void addcolumn(listCols *List, char *titre, size_t memorySize, DATA_NATURE VarType, tab_header *headerTab)
 {
@@ -31,11 +31,11 @@ void addcolumn(listCols *List, char *titre, size_t memorySize, DATA_NATURE VarTy
     return;
 }
 
-void addTableTo(table *tab)
+void addTableTo(tab_header *tab)
 {
     if (tab != NULL)
     {
-        tab_all[tab_count_db] = tab;
+        preTabs[tab_count_db] = tab;
         tab_count_db++;
     }
     else
@@ -205,20 +205,20 @@ void showALLTabs()
     {
         for (int i = 0; i < tab_count_db; i++)
         {
-            printf("%s ", tab_all[i]->header->name);
+            printf("%s ", preTabs[i]->name);
         }
     }
     printf("\n");
 }
 
-table *find_table(const char *name)
-{
-    for (int i = 0; i < tab_count_db; i++)
-    {
-        if (strcmp(tab_all[i]->header->name, name) == 0)
-        {
-            return tab_all[i];
-        }
-    }
-    return NULL;
-}
+// table *find_table(const char *name)
+// {
+//     for (int i = 0; i < tab_count_db; i++)
+//     {
+//         if (strcmp(preTabs[i]->name, name) == 0)
+//         {
+//             return tab_all[i];
+//         }
+//     }
+//     return NULL;
+// }
